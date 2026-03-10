@@ -1,0 +1,32 @@
+{
+	"schemaVersion": 1,
+	"id": "chat-emoji-mod",
+	"version": "${version}",
+	"name": "Chat Emoji Mod",
+	"description": "This mod lets you post twemoji in chat. Type :tada: and it transform client side to 🎉 for everyone with the mod!",
+	"authors": [
+		"nopo",
+		"AmberWat"
+	],
+	"contact": {
+		"sources": "https://github.com/nopothegamer/chat-emoji-mod"
+	},
+	"license": "MIT",
+	"icon": "assets/chat-emoji-mod/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			{
+				"value": "com.nopo.ChatEmojiMod",
+				"adapter": "kotlin"
+			}
+		]
+	},
+	"depends": {
+		"fabricloader": ">=0.18.4",
+		"minecraft": ">1.21.9",
+		"java": ">=21",
+		"fabric-api": "*",
+		"fabric-language-kotlin": "*"
+	}
+}
