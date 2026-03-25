@@ -8,8 +8,7 @@ import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.contents.objects.AtlasSprite
-import net.minecraft.resources.ResourceLocation
-import org.slf4j.LoggerFactory
+import net.minecraft.resources.Identifier
 import java.lang.reflect.Type
 import java.nio.file.Files
 
@@ -34,11 +33,12 @@ object ChatEmojiMod : ModInitializer {
 
 	var emojis = listOf<Emoji>()
 	val chatList = mutableListOf<String>()
-	val gui: ResourceLocation = ResourceLocation.withDefaultNamespace("gui")
+	val gui: Identifier = Identifier.withDefaultNamespace("gui")
 
 
 	private fun onModify(message: Component, actionBar: Boolean): Component {
-		if (actionBar) return message
+		// fabric event is cooked rn
+		//if (actionBar) return message
 		try {
 			var component = message.copy()
 			val text = message.string
@@ -64,6 +64,6 @@ object ChatEmojiMod : ModInitializer {
 	}
 
 	fun buildEmojiComponent(name: String): Component {
-		return Component.`object`(AtlasSprite(gui, ResourceLocation.fromNamespaceAndPath("chat-emoji-mod", name)))
+		return Component.`object`(AtlasSprite(gui, Identifier.fromNamespaceAndPath("chat-emoji-mod", name)))
 	}
 }
