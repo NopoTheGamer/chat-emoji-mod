@@ -12,6 +12,9 @@
 		"sources": "https://github.com/nopothegamer/chat-emoji-mod"
 	},
 	"license": "MIT",
+	"mixins": [
+		"chat-emoji-mod.mixins.json"
+	],
 	"icon": "assets/chat-emoji-mod/icon.png",
 	"environment": "*",
 	"entrypoints": {

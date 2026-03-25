@@ -25,9 +25,15 @@ object ChatEmojiMod : ModInitializer {
 		val jsonReader = JsonReader(newInputStream)
 		val json = Gson().fromJson<Emojis>(jsonReader, EMOJI_TYPE)
 		emojis = json.emojis
+		for (emoji in emojis) {
+			for (part in emoji.getAll()) {
+				chatList.add("$part ")
+			}
+		}
 	}
 
 	var emojis = listOf<Emoji>()
+	val chatList = mutableListOf<String>()
 	val gui: ResourceLocation = ResourceLocation.withDefaultNamespace("gui")
 
 

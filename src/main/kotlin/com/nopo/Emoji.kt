@@ -16,4 +16,8 @@ data class Emoji(val name: String, val alternatives: List<String>? = null) {
         }
         return newList
     }
+
+    fun getAll(): List<String> {
+        return getColonAlternatives() + ":$name:"
+    }
 }
