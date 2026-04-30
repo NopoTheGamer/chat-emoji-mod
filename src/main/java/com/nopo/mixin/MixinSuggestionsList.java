@@ -69,7 +69,7 @@ public class MixinSuggestionsList {
                             emojiComponent,
                             this.rect.getX() + 1,
                             this.rect.getY() + 2 + 12 * i,
-                            i + this.offset == this.current ? -256 : -5592406
+                            -1
                     );
                     break;
                 }
