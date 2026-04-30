@@ -3,6 +3,7 @@ package com.nopo.mixin;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalIntRef;
+import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.brigadier.suggestion.Suggestion;
 import com.nopo.ChatEmojiMod;
 import com.nopo.Emoji;
@@ -39,14 +40,44 @@ public class MixinSuggestionsList {
     @Shadow
     private int offset;
 
-    @Shadow
-    private int current;
+    @Inject(
+            method = "extractRenderState",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V",
+                    ordinal = 4
+            )
+    )
+    private void prepEmoji(
+            GuiGraphicsExtractor graphics,
+            int mouseX,
+            int mouseY,
+            CallbackInfo ci,
+            @Local(name = "suggestion") Suggestion suggestion,
+            @Local(name = "i") int i,
+            @Share("offset") LocalIntRef offset,
+            @Share("emojiComponent")LocalRef<Component> emojiComponent
+            ) {
+        offset.set(0);
+        String text = suggestion.getText().trim();
+        if (EMOJI_PATTERN.matcher(text).matches()) {
+            for (Emoji emoji : ChatEmojiMod.INSTANCE.getEmojis()) {
+                if (emoji.isEmoji(text.replaceAll("(:)", ""))) {
+                    emojiComponent.set(ChatEmojiMod.INSTANCE.buildEmojiComponent(emoji.getName()));
+                    offset.set(((AccessorCommandSuggestions)this$0).chatemojimod$font().width(emojiComponent.get()) + 1);
+                    break;
+                }
+            }
+        }
+    }
 
     @Inject(
             method = "extractRenderState",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;text(Lnet/minecraft/client/gui/Font;Ljava/lang/String;III)V"
+                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V",
+                    ordinal = 4,
+                    shift = At.Shift.AFTER
             )
     )
     private void renderEmoji(
@@ -54,27 +85,28 @@ public class MixinSuggestionsList {
             int mouseX,
             int mouseY,
             CallbackInfo ci,
-            @Local(name = "suggestion") Suggestion suggestion,
             @Local(name = "i") int i,
-            @Share("offset") LocalIntRef offset
+            @Share("emojiComponent")LocalRef<Component> emojiComponent
     ) {
-        offset.set(0);
-        String text = suggestion.getText().trim();
-        if (EMOJI_PATTERN.matcher(text).matches()) {
-            for (Emoji emoji : ChatEmojiMod.INSTANCE.getEmojis()) {
-                if (emoji.isEmoji(text.replaceAll("(:)", ""))) {
-                    Component emojiComponent = ChatEmojiMod.INSTANCE.buildEmojiComponent(emoji.getName());
-                    offset.set(((AccessorCommandSuggestions)this$0).chatemojimod$font().width(emojiComponent) + 1);
-                    graphics.text(((AccessorCommandSuggestions)this$0).chatemojimod$font(),
-                            emojiComponent,
-                            this.rect.getX() + 1,
-                            this.rect.getY() + 2 + 12 * i,
-                            -1
-                    );
-                    break;
-                }
-            }
-        }
+        graphics.text(((AccessorCommandSuggestions)this$0).chatemojimod$font(),
+                emojiComponent.get(),
+                this.rect.getX() + 1,
+                this.rect.getY() + 2 + 12 * i,
+                -1
+        );
+    }
+
+    @ModifyArg(
+            method = "extractRenderState",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V",
+                    ordinal = 4
+            ),
+            index = 2
+    )
+    private int enlargeBackground(int original, @Share("offset") LocalIntRef offset) {
+        return original + offset.get();
     }
 
     @ModifyArg(
