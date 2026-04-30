@@ -1,9 +1,10 @@
 package com.nopo.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalIntRef;
-import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.brigadier.suggestion.Suggestion;
 import com.nopo.ChatEmojiMod;
 import com.nopo.Emoji;
@@ -17,9 +18,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.regex.Pattern;
 
@@ -37,10 +36,7 @@ public class MixinSuggestionsList {
     @Final
     private Rect2i rect;
 
-    @Shadow
-    private int offset;
-
-    @Inject(
+    @WrapOperation(
             method = "extractRenderState",
             at = @At(
                     value = "INVOKE",
@@ -48,65 +44,39 @@ public class MixinSuggestionsList {
                     ordinal = 4
             )
     )
-    private void prepEmoji(
-            GuiGraphicsExtractor graphics,
-            int mouseX,
-            int mouseY,
-            CallbackInfo ci,
+    private void renderEmoji(
+            GuiGraphicsExtractor instance,
+            int x0,
+            int y0,
+            int x1,
+            int y1,
+            int col,
+            Operation<Void> original,
             @Local(name = "suggestion") Suggestion suggestion,
             @Local(name = "i") int i,
-            @Share("offset") LocalIntRef offset,
-            @Share("emojiComponent")LocalRef<Component> emojiComponent
-            ) {
+            @Share("offset") LocalIntRef offset
+    ) {
         offset.set(0);
+        Component emojiComponent = null;
         String text = suggestion.getText().trim();
         if (EMOJI_PATTERN.matcher(text).matches()) {
             for (Emoji emoji : ChatEmojiMod.INSTANCE.getEmojis()) {
                 if (emoji.isEmoji(text.replaceAll("(:)", ""))) {
-                    emojiComponent.set(ChatEmojiMod.INSTANCE.buildEmojiComponent(emoji.getName()));
-                    offset.set(((AccessorCommandSuggestions)this$0).chatemojimod$font().width(emojiComponent.get()) + 1);
+                    emojiComponent = ChatEmojiMod.INSTANCE.buildEmojiComponent(emoji.getName());
+                    offset.set(((AccessorCommandSuggestions)this$0).chatemojimod$font().width(emojiComponent) + 1);
                     break;
                 }
             }
         }
-    }
-
-    @Inject(
-            method = "extractRenderState",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V",
-                    ordinal = 4,
-                    shift = At.Shift.AFTER
-            )
-    )
-    private void renderEmoji(
-            GuiGraphicsExtractor graphics,
-            int mouseX,
-            int mouseY,
-            CallbackInfo ci,
-            @Local(name = "i") int i,
-            @Share("emojiComponent")LocalRef<Component> emojiComponent
-    ) {
-        graphics.text(((AccessorCommandSuggestions)this$0).chatemojimod$font(),
-                emojiComponent.get(),
-                this.rect.getX() + 1,
-                this.rect.getY() + 2 + 12 * i,
-                -1
-        );
-    }
-
-    @ModifyArg(
-            method = "extractRenderState",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V",
-                    ordinal = 4
-            ),
-            index = 2
-    )
-    private int enlargeBackground(int original, @Share("offset") LocalIntRef offset) {
-        return original + offset.get();
+        original.call(instance, x0, y0, x1 + offset.get(), y1, col);
+        if (emojiComponent != null) {
+            instance.text(((AccessorCommandSuggestions)this$0).chatemojimod$font(),
+                    emojiComponent,
+                    this.rect.getX() + 1,
+                    this.rect.getY() + 2 + 12 * i,
+                    -1
+            );
+        }
     }
 
     @ModifyArg(
