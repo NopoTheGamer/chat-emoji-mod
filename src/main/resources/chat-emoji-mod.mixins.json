@@ -6,7 +6,8 @@
   "mixins": [
   ],
   "client": [
-    "MixinCommandSuggestions"
+    "MixinCommandSuggestions",
+    "SuggestionsListMixin"
   ],
   "injectors": {
     "defaultRequire": 1
