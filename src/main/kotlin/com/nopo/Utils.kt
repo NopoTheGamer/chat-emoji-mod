@@ -24,7 +24,7 @@ fun Component.replace(
     val newComp = Component.empty()
     var hasEdited = false
 
-    this.visit({ currentStyle: Style, string: String ->
+    this.visit({ currentStyle: Style?, string: String? ->
         if (string?.contains(oldValue) == true && (!onlyReplaceFirst || !hasEdited) && predicate(style)) {
             val split = string.split(oldValue)
             newComp.append(
