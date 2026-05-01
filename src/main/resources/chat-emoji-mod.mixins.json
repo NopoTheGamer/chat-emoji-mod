@@ -6,7 +6,9 @@
   "mixins": [
   ],
   "client": [
-    "MixinCommandSuggestions"
+    "MixinCommandSuggestions",
+    "MixinSuggestionsList",
+    "accessor.AccessorCommandSuggestions"
   ],
   "injectors": {
     "defaultRequire": 1
