@@ -67,8 +67,8 @@ public class MixinSuggestionsList {
             int y1,
             int col,
             Operation<Void> original,
-            @Local(name = "suggestion") Suggestion suggestion,
-            @Local(name = "n") int n,
+            @Local(ordinal = 0) Suggestion suggestion,
+            @Local(ordinal = 4) int n,
             @Share("offset") LocalIntRef offset,
             @Share("upper")LocalRef<CommandSuggestions> upper
     ) {
